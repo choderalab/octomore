@@ -71,9 +71,30 @@ class Unimore(object):
             lambda_min=2.1, lambda_max=3.0,
             period_min=-math.pi, period_max=math.pi
         )
+        self.storage = paths.storage.Storage(
+            filename=output,
+            mode="w",
+            template=self.engine.current_snapshot,
+        )
 
-    def ratcheter(self, interfaces):
-        pass
+    def ratcheter(self, interfaces, direction="in_out"):
+        if direction == "in_out":
+            stateA = self.DFG_in
+            stateB = self.DFG_out
+        elif direction == "out_in":
+            stateA = self.DFG_out
+            stateB = self.DFG_in
+        else:
+            raise RuntimeError("direction is " + str(direction) + 
+                               ": must be 'in_out' or 'out_in'.")
+        transition = paths.TISTransition(stateA, stateB, interfaces, self.cv)
+        ratcheter = paths.FullBoostrapping(
+            transition=transition,
+            snapshot=self.engine.current_snapshot,
+            storage=self.storage,
+            engine=self.engine
+        )
+        return ratcheter
 
 
 class DFG(Unimore):
