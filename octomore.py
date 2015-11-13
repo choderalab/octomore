@@ -63,10 +63,13 @@ class Unimore(object):
             file_name=kinase['file'],
             pdb=kinase['pdb']
         )
+        # REALLY? This is ridiculous, and illustrates the problem with the
+        # topology approach
+        self.engine.current_snapshot.configuration.topology = self.engine.topology
 
         self.dfg = paths.CV_MDTraj_Function(name="DFG", 
                                             f=md.compute_dihedrals,
-                                            indices=kinase['DFG'])
+                                            indices=[kinase['DFG']])
         self.DFG_in = paths.CVRangeVolumePeriodic(
             self.dfg,
             lambda_min=-3.1, lambda_max=0.0,
@@ -97,7 +100,7 @@ class Unimore(object):
             raise RuntimeError("direction is " + str(direction) + 
                                ": must be 'in_out' or 'out_in'.")
         transition = paths.TISTransition(stateA, stateB, interfaces, self.cv)
-        ratcheter = paths.FullBoostrapping(
+        ratcheter = paths.FullBootstrapping(
             transition=transition,
             snapshot=self.engine.current_snapshot,
             storage=self.storage,
