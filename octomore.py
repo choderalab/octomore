@@ -20,22 +20,25 @@ class Unimore(object):
         from simtk.openmm import app
         import simtk.openmm as mm
         from simtk import unit
+        kinase = self.kinase
 
-        # taken from builder.openmm.org (working in vacuum here)
-        forcefield = app.ForceField('amber99sbildn.xml')
+        #### SET UP THE OPENMM STUFF #######################################
+        # taken from builder.openmm.org
+        forcefield = app.ForceField('amber99sbildn.xml', 'amber99_obc.xml')
 
-        system = forcefield.createSystem(app.PDBFile(Abl_topol).topology,
-                                         nonbondedMethod=app.PME, 
-                                         nonbondedCutoff=1.0*unit.nanometers,
-                                         constraints=app.HBonds,
-                                         rigidWater=True, 
-                                         ewaldErrorTolerance=0.0005)
+        system = forcefield.createSystem(app.PDBFile(kinase['pdb']).topology,
+                                         nonbondedMethod=app.NoCutoff, 
+                                         constraints=app.HBonds)
+
         integrator = mm.LangevinIntegrator(300*unit.kelvin,
                                            1.0/unit.picoseconds, 
                                            2.0*unit.femtoseconds)
         integrator.setConstraintTolerance(0.00001)
 
+
+        #### OPENPATHSAMPLING-SPECIFIC SETUP ###############################
         options = { 'nsteps_per_frame' : 10}
+        template = paths.tools.snapshot_from_pdb(kinase['pdb'])
 
         engine = paths.OpenMMEngine(
                 template=template,
@@ -43,6 +46,7 @@ class Unimore(object):
                 integrator=integrator,
                 options=options
         )
+
         return engine
 
     def get_initial_frame(self, frame_num, file_name, pdb):
@@ -50,32 +54,37 @@ class Unimore(object):
         traj = paths.Trajectory.from_mdtraj(md.load(file_name, top=pdb))
         return traj[frame_num]
 
-    def __init__(self, output=None, kinase=Abl):
+    def __init__(self, output_file=None, kinase=Abl):
         self.cv = None # override in subclasses
+        self.kinase = kinase
         self.engine = self.build_engine()
-        self.engine.current_snapshot = get_initial_frame(
+        self.engine.current_snapshot = self.get_initial_frame(
             frame_num=0,
             file_name=kinase['file'],
-            top=kinase['pdb']
+            pdb=kinase['pdb']
         )
+
         self.dfg = paths.CV_MDTraj_Function(name="DFG", 
                                             f=md.compute_dihedrals,
                                             indices=kinase['DFG'])
         self.DFG_in = paths.CVRangeVolumePeriodic(
-            dfg,
+            self.dfg,
             lambda_min=-3.1, lambda_max=0.0,
             period_min=-math.pi, period_max=math.pi
         )
         self.DFG_out = paths.CVRangeVolumePeriodic(
-            dfg
+            self.dfg,
             lambda_min=2.1, lambda_max=3.0,
             period_min=-math.pi, period_max=math.pi
         )
-        self.storage = paths.storage.Storage(
-            filename=output,
-            mode="w",
-            template=self.engine.current_snapshot,
-        )
+        if output_file is not None:
+            self.storage = paths.storage.Storage(
+                filename=output_file,
+                mode="w",
+                template=self.engine.template
+            )
+        else:
+            self.storage = None
 
     def ratcheter(self, interfaces, direction="in_out"):
         if direction == "in_out":
@@ -98,7 +107,8 @@ class Unimore(object):
 
 
 class DFG(Unimore):
-    def __init__(self, kinase=Abl):
-        super(DFG, self).__init__(kinase)
+    """As an example CV, we implement the DFG (which is already prepared)"""
+    def __init__(self, output_file=None, kinase=Abl):
+        super(DFG, self).__init__(output_file, kinase)
         self.cv = self.dfg
 
