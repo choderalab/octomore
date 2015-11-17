@@ -37,7 +37,7 @@ class Unimore(object):
 
 
         #### OPENPATHSAMPLING-SPECIFIC SETUP ###############################
-        options = { 'nsteps_per_frame' : 10}
+        options = {'nsteps_per_frame' : 50, 'n_frames_max' : 1500}
         template = paths.tools.snapshot_from_pdb(kinase['pdb'])
 
         engine = paths.OpenMMEngine(
@@ -59,7 +59,7 @@ class Unimore(object):
         self.kinase = kinase
         self.engine = self.build_engine()
         self.engine.current_snapshot = self.get_initial_frame(
-            frame_num=0,
+            frame_num=1,
             file_name=kinase['file'],
             pdb=kinase['pdb']
         )
@@ -70,14 +70,14 @@ class Unimore(object):
         self.dfg = paths.CV_MDTraj_Function(name="DFG", 
                                             f=md.compute_dihedrals,
                                             indices=[kinase['DFG']])
-        self.DFG_in = paths.CVRangeVolumePeriodic(
-            self.dfg,
-            lambda_min=-3.1, lambda_max=0.0,
-            period_min=-math.pi, period_max=math.pi
-        )
         self.DFG_out = paths.CVRangeVolumePeriodic(
             self.dfg,
-            lambda_min=2.1, lambda_max=3.0,
+            lambda_min=-4.0, lambda_max=-2.6,
+            period_min=-math.pi, period_max=math.pi
+        )
+        self.DFG_in = paths.CVRangeVolumePeriodic(
+            self.dfg,
+            lambda_min=0.0, lambda_max=1.0,
             period_min=-math.pi, period_max=math.pi
         )
         if output_file is not None:
@@ -89,7 +89,7 @@ class Unimore(object):
         else:
             self.storage = None
 
-    def ratcheter(self, interfaces, direction="in_out"):
+    def ratcheter(self, interfaces, direction="out_in"):
         if direction == "in_out":
             stateA = self.DFG_in
             stateB = self.DFG_out
