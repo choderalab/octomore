@@ -52,7 +52,7 @@ class Unimore(object):
 
     def get_initial_frame(self, frame_num, file_name, pdb):
         """Pulls an initial frame out of an xtc file"""
-        traj = paths.Trajectory.from_mdtraj(md.load(file_name, top=pdb))
+        traj = paths.trajectory_from_mdtraj(md.load(file_name, top=pdb))
         return traj[frame_num]
 
     def __init__(self, output_file=None, kinase=Abl):
