@@ -89,7 +89,8 @@ class Unimore(object):
         else:
             self.storage = None
 
-    def ratcheter(self, interfaces, direction="out_in"):
+    @staticmethod
+    def interpret_direction(direction):
         if direction == "in_out":
             stateA = self.DFG_in
             stateB = self.DFG_out
@@ -99,6 +100,11 @@ class Unimore(object):
         else:
             raise RuntimeError("direction is " + str(direction) + 
                                ": must be 'in_out' or 'out_in'.")
+        return (stateA, stateB)
+        
+
+    def ratcheter(self, interfaces, direction="out_in"):
+        stateA, stateB = self.interpret_direction(direction)
         transition = paths.TISTransition(stateA, stateB, interfaces, self.cv)
         ratcheter = paths.FullBootstrapping(
             transition=transition,
@@ -107,6 +113,12 @@ class Unimore(object):
             engine=self.engine
         )
         return ratcheter
+
+    def tps(self, initial_trajectory, direction="out_in"):
+        """Sets up a TPS run with the given initial trajectory"""
+        stateA, stateB = self.interpret_direction(direction)
+        network = paths.TPSNetwork(stateA, stateB)
+
 
 
 class DFG(Unimore):
