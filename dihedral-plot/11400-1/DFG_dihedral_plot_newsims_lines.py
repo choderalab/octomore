@@ -64,8 +64,13 @@ Src_line_rotate = np.asarray(Src_line_rotate)
 
 print Abl_line_rotate
 
-plt.axvline(Abl_line_rotate.all(), color="r")
-plt.axvline(Src_line_rotate.all(), color="b")
+#plt.axvline(Abl_line_rotate.all(), color="r")
+#plt.axvline(Src_line_rotate.all(), color="b")
+
+for i in range(len(Abl_line_rotate)):
+	plt.axvline(Abl_line_rotate[i], color="r")
+for i in range(len(Src_line_rotate)):
+	plt.axvline(Src_line_rotate[i], color="b")
 
 plt.xlabel('Dihedral (radians)')
 plt.ylabel('Occupancy')
