@@ -118,6 +118,12 @@ class Unimore(object):
         """Sets up a TPS run with the given initial trajectory"""
         stateA, stateB = self.interpret_direction(direction)
         network = paths.TPSNetwork(stateA, stateB)
+        ensemble = network.ensembles[0]
+        scheme = paths.LockedMoveScheme(
+            paths.OneWayShootingMover(ensemble=ensemble,
+                                      selector=paths.UniformSelector())
+        )
+        
 
 
 
