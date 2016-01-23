@@ -123,8 +123,22 @@ class Unimore(object):
             paths.OneWayShootingMover(ensemble=ensemble,
                                       selector=paths.UniformSelector())
         )
+        initial_state = paths.SampleSet(
+            paths.Sample(
+                replica=0,
+                trajectory=initial_trajectory,
+                ensemble=ensemble
+            )
+        )
+        initial_state.sanity_check()
+        calc = paths.PathSampling(
+            storage=None,
+            engine=self.engine,
+            move_scheme=scheme,
+            globalstate=initial_state
+        )
+        return calc
         
-
 
 
 class DFG(Unimore):
