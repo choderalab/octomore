@@ -1,5 +1,5 @@
 # dihedral-plot
-Here are some plots of Src and Abl simulations according the dihedral angle suggested Lin...Roux, PNAS (2013) to be informative of the DFG-in vs. DFG-out conformation.
+Here are some plots of Src and Abl simulations according the dihedral angle suggested [Lin...Roux, PNAS (2013)](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3562763/pdf/pnas.201214330.pdf) to be informative of the DFG-in vs. DFG-out conformation.
 
 ## Manifest
 * `11400-1\` - analysis of new simulations seeded from ensembler, this includes 'lines' plots that mark where the simulation started
