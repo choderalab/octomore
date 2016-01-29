@@ -132,7 +132,7 @@ class Unimore(object):
         )
         initial_state.sanity_check()
         calc = paths.PathSampling(
-            storage=None,
+            storage=self.storage,
             engine=self.engine,
             move_scheme=scheme,
             globalstate=initial_state
