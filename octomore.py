@@ -13,6 +13,13 @@ Abl = {
     'DFG' : [2257,2255,2265,2270]
 }
 
+Src = {
+    'name' : "Src",
+    'file' : "sim-snippets/dozen_frames_src.xtc",
+    'pdb' : "sim-snippets/src_ref.pdb",
+    'DFG' : [2190,2188,2198,2203]
+}
+
 class Unimore(object):
     """If Octomore is about finding 8+ possible CVs, this is for 1 of them"""
     def build_engine(self):
