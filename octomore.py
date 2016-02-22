@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import openpathsampling as paths
+import openpathsampling.storage as st
 import numpy as np
 import mdtraj as md
 import math
@@ -72,7 +73,7 @@ class Unimore(object):
                                             indices=[kinase['DFG']])
         self.DFG_out = paths.CVRangeVolumePeriodic(
             self.dfg,
-            lambda_min=-4.0, lambda_max=-2.6,
+            lambda_min=-4.0, lambda_max=-2.7,
             period_min=-math.pi, period_max=math.pi
         )
         self.DFG_in = paths.CVRangeVolumePeriodic(
@@ -81,7 +82,7 @@ class Unimore(object):
             period_min=-math.pi, period_max=math.pi
         )
         if output_file is not None:
-            self.storage = paths.storage.Storage(
+            self.storage = st.Storage(
                 filename=output_file,
                 mode="w",
                 template=self.engine.template
