@@ -80,12 +80,12 @@ class Unimore(object):
                                             indices=[kinase['DFG']])
         self.DFG_out = paths.CVRangeVolumePeriodic(
             self.dfg,
-            lambda_min=-4.0, lambda_max=-2.7,
+            lambda_min=-2.0, lambda_max=-1.0,
             period_min=-math.pi, period_max=math.pi
         )
         self.DFG_in = paths.CVRangeVolumePeriodic(
             self.dfg,
-            lambda_min=0.0, lambda_max=1.0,
+            lambda_min=0.5, lambda_max=2.0,
             period_min=-math.pi, period_max=math.pi
         )
         if output_file is not None:
