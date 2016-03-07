@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import openpathsampling as paths
+import openpathsampling.engines.openmm as omm_eng
 import openpathsampling.storage as st
 import numpy as np
 import mdtraj as md
@@ -46,9 +47,9 @@ class Unimore(object):
 
         #### OPENPATHSAMPLING-SPECIFIC SETUP ###############################
         options = {'nsteps_per_frame' : 50, 'n_frames_max' : 1500}
-        template = paths.tools.snapshot_from_pdb(kinase['pdb'])
+        template = omm_eng.tools.snapshot_from_pdb(kinase['pdb'])
 
-        engine = paths.OpenMMEngine(
+        engine = omm_eng.Engine(
                 template=template,
                 system=system,
                 integrator=integrator,
@@ -59,7 +60,7 @@ class Unimore(object):
 
     def get_initial_frame(self, frame_num, file_name, pdb):
         """Pulls an initial frame out of an xtc file"""
-        traj = paths.trajectory_from_mdtraj(md.load(file_name, top=pdb))
+        traj = omm_eng.tools.trajectory_from_mdtraj(md.load(file_name, top=pdb))
         return traj[frame_num]
 
     def __init__(self, output_file=None, kinase=Abl):
@@ -71,9 +72,7 @@ class Unimore(object):
             file_name=kinase['file'],
             pdb=kinase['pdb']
         )
-        # REALLY? This is ridiculous, and illustrates the problem with the
-        # topology approach
-        self.engine.current_snapshot.configuration.topology = self.engine.topology
+        self.engine.current_snapshot.topology = self.engine.topology
 
         self.dfg = paths.CV_MDTraj_Function(name="DFG", 
                                             f=md.compute_dihedrals,
