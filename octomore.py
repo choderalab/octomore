@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import openpathsampling as paths
+import openpathsampling.engines.openmm as omm_eng
 import openpathsampling.storage as st
 import numpy as np
 import mdtraj as md
@@ -11,6 +12,13 @@ Abl = {
     'file' : "sim-snippets/dozen_frames_abl.xtc",
     'pdb' : "sim-snippets/abl_ref.pdb",
     'DFG' : [2257,2255,2265,2270]
+}
+
+Src = {
+    'name' : "Src",
+    'file' : "sim-snippets/dozen_frames_src.xtc",
+    'pdb' : "sim-snippets/src_ref.pdb",
+    'DFG' : [2190,2188,2198,2203]
 }
 
 class Unimore(object):
@@ -39,9 +47,9 @@ class Unimore(object):
 
         #### OPENPATHSAMPLING-SPECIFIC SETUP ###############################
         options = {'nsteps_per_frame' : 50, 'n_frames_max' : 1500}
-        template = paths.tools.snapshot_from_pdb(kinase['pdb'])
+        template = omm_eng.tools.snapshot_from_pdb(kinase['pdb'])
 
-        engine = paths.OpenMMEngine(
+        engine = omm_eng.Engine(
                 template=template,
                 system=system,
                 integrator=integrator,
@@ -52,7 +60,7 @@ class Unimore(object):
 
     def get_initial_frame(self, frame_num, file_name, pdb):
         """Pulls an initial frame out of an xtc file"""
-        traj = paths.trajectory_from_mdtraj(md.load(file_name, top=pdb))
+        traj = omm_eng.tools.trajectory_from_mdtraj(md.load(file_name, top=pdb))
         return traj[frame_num]
 
     def __init__(self, output_file=None, kinase=Abl):
@@ -64,21 +72,19 @@ class Unimore(object):
             file_name=kinase['file'],
             pdb=kinase['pdb']
         )
-        # REALLY? This is ridiculous, and illustrates the problem with the
-        # topology approach
-        self.engine.current_snapshot.configuration.topology = self.engine.topology
+        self.engine.current_snapshot.topology = self.engine.topology
 
         self.dfg = paths.CV_MDTraj_Function(name="DFG", 
                                             f=md.compute_dihedrals,
                                             indices=[kinase['DFG']])
         self.DFG_out = paths.CVRangeVolumePeriodic(
             self.dfg,
-            lambda_min=-4.0, lambda_max=-2.7,
+            lambda_min=-2.0, lambda_max=-1.0,
             period_min=-math.pi, period_max=math.pi
         )
         self.DFG_in = paths.CVRangeVolumePeriodic(
             self.dfg,
-            lambda_min=0.0, lambda_max=1.0,
+            lambda_min=0.5, lambda_max=2.0,
             period_min=-math.pi, period_max=math.pi
         )
         if output_file is not None:
